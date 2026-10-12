@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- SECTION: Head -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Planet Foundry – Build Your Own World</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
+        rel="stylesheet" />
+</head>
+
+<body class="app gradient-mesh grain">
+    <!-- SECTION: Background decor -->
+    <div class="floating-shape floating-shape--one" aria-hidden="true"></div>
+    <div class="floating-shape floating-shape--two" aria-hidden="true"></div>
+
+    <div class="app__shell">
+        <!-- SECTION: Header -->
+        <header class="app-header">
+            <div>
+                <h1 class="app-title">Planet Foundry</h1>
+                <p class="app-tagline">Design a custom world. Tune its physics, chemistry, and star system in real time.
+                </p>
+            </div>
+            <button class="btn btn--ghost" id="resetPlanet" type="button">Reset</button>
+        </header>
+
+        <main class="app-main" aria-label="Planet builder">
+            <!-- SECTION: Visual Builder -->
+            <section class="panel panel--visual gradient-border shadow-dramatic" aria-label="3D planet view">
+                <div class="panel__header">
+                    <h2 class="panel__title">Live Planet View</h2>
+                    <p class="panel__subtitle">Drag to rotate. Use the controls to reshape your world.</p>
+                </div>
+
+                <div class="visual-layout">
+                    <div class="visual-layout__canvas-wrapper">
+                        <div class="canvas-frame shadow-soft" aria-hidden="true">
+                            <canvas id="planetCanvas" class="canvas-frame__canvas"
+                                aria-label="Interactive 3D planet"></canvas>
+                        </div>
+                        <p class="canvas-hint">Tip: drag to orbit, scroll to zoom</p>
+                    </div>
+
+                    <aside class="snapshot" aria-label="Planet summary stats">
+                        <h3 class="snapshot__title">Planet Snapshot</h3>
+                        <div class="snapshot__grid">
+                            <div class="stat-card">
+                                <p class="stat-card__label">Radius</p>
+                                <p class="stat-card__value"><span id="statRadius">6,371</span> km</p>
+                            </div>
+                            <div class="stat-card">
+                                <p class="stat-card__label">Mass</p>
+                                <p class="stat-card__value"><span id="statMass">1.00</span> M⊕</p>
+                            </div>
+                            <div class="stat-card">
+                                <p class="stat-card__label">Gravity</p>
+                                <p class="stat-card__value"><span id="statGravity">9.81</span> m/s²</p>
+                            </div>
+                            <div class="stat-card">
+                                <p class="stat-card__label">Avg. Temp</p>
+                                <p class="stat-card__value"><span id="statTemperature">288</span> K</p>
+                            </div>
+                            <div class="stat-card">
+                                <p class="stat-card__label">Moons</p>
+                                <p class="stat-card__value"><span id="statMoons">1</span></p>
+                            </div>
+                            <div class="stat-card">
+                                <p class="stat-card__label">Star Type</p>
+                                <p class="stat-card__value"><span id="statStar">G‑type</span></p>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- SECTION: Controls + Profile -->
+            <section class="layout-two-column">
+                <!-- SECTION: Control Panel -->
+                <section class="panel panel--controls shadow-soft" aria-label="Planet controls">
+                    <div class="panel__header">
+                        <h2 class="panel__title">Builder Controls</h2>
+                        <p class="panel__subtitle">Adjust size, composition, star, and moons. Stats update instantly.
+                        </p>
+                    </div>
+
+                    <form class="control-form" id="planetForm">
+                        <!-- SECTION: Planet Basics -->
+                        <fieldset class="field-group">
+                            <legend class="field-group__legend">Planet basics</legend>
+
+                            <div class="field">
+                                <label class="field__label" for="planetName">Name</label>
+                                <input class="field__input" id="planetName" name="planetName" type="text"
+                                    placeholder="Enter planet name" value="Eidolon-1" />
+                            </div>
+
+                            <div class="field field--range">
+                                <div class="field__label-row">
+                                    <label class="field__label" for="radius">Radius (relative to Earth)</label>
+                                    <span class="field__value" id="radiusDisplay">1.0 × R⊕</span>
+                                </div>
+                                <input class="field__range" id="radius" name="radius" type="range" min="0.3" max="3"
+                                    step="0.1" value="1" />
+                                <div class="field__ticks">
+                                    <span>0.3</span>
+                                    <span>1.0</span>
+                                    <span>3.0</span>
+                                </div>
+                            </div>
+
+                            <div class="field field--range">
+                                <div class="field__label-row">
+                                    <label class="field__label" for="density">Bulk density</label>
+                                    <span class="field__value" id="densityDisplay">Earth‑like</span>
+                                </div>
+                                <input class="field__range" id="density" name="density" type="range" min="0.4" max="1.6"
+                                    step="0.1" value="1" />
+                                <div class="field__ticks">
+                                    <span>Light</span>
+                                    <span>Earth</span>
+                                    <span>Ultra‑dense</span>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- SECTION: Composition -->
+                        <fieldset class="field-group">
+                            <legend class="field-group__legend">Composition (elements)</legend>
+                            <p class="field-group__hint">Pick dominant elements. These affect color, density, and
+                                description.</p>
+
+                            <div class="chips" role="group" aria-label="Dominant elements">
+                                <button type="button" class="chip chip--selected" data-element="Fe">Fe – Iron</button>
+                                <button type="button" class="chip chip--selected" data-element="Si">Si –
+                                    Silicon</button>
+                                <button type="button" class="chip" data-element="O">O – Oxygen</button>
+                                <button type="button" class="chip" data-element="C">C – Carbon</button>
+                                <button type="button" class="chip" data-element="H">H – Hydrogen</button>
+                                <button type="button" class="chip" data-element="He">He – Helium</button>
+                                <button type="button" class="chip" data-element="Ni">Ni – Nickel</button>
+                                <button type="button" class="chip" data-element="Mg">Mg – Magnesium</button>
+                            </div>
+                        </fieldset>
+
+                        <!-- SECTION: Star System -->
+                        <fieldset class="field-group">
+                            <legend class="field-group__legend">Star system</legend>
+
+                            <div class="field">
+                                <label class="field__label" for="starType">Star type</label>
+                                <select class="field__input" id="starType" name="starType">
+                                    <option value="M">M‑type (red dwarf)</option>
+                                    <option value="K">K‑type (orange dwarf)</option>
+                                    <option value="G" selected>G‑type (Sun‑like)</option>
+                                    <option value="F">F‑type (white)</option>
+                                    <option value="A">A‑type (blue‑white)</option>
+                                </select>
+                            </div>
+
+                            <div class="field field--range">
+                                <div class="field__label-row">
+                                    <label class="field__label" for="orbit">Orbit distance</label>
+                                    <span class="field__value" id="orbitDisplay">1.0 AU</span>
+                                </div>
+                                <input class="field__range" id="orbit" name="orbit" type="range" min="0.2" max="3"
+                                    step="0.1" value="1" />
+                                <div class="field__ticks">
+                                    <span>Hot</span>
+                                    <span>Temperate</span>
+                                    <span>Cold</span>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- SECTION: Moons & extras -->
+                        <fieldset class="field-group">
+                            <legend class="field-group__legend">Moons & extras</legend>
+
+                            <div class="field field--range">
+                                <div class="field__label-row">
+                                    <label class="field__label" for="moons">Number of moons</label>
+                                    <span class="field__value" id="moonsDisplay">1</span>
+                                </div>
+                                <input class="field__range" id="moons" name="moons" type="range" min="0" max="6"
+                                    step="1" value="1" />
+                                <div class="field__ticks">
+                                    <span>0</span>
+                                    <span>3</span>
+                                    <span>6</span>
+                                </div>
+                            </div>
+
+                            <label class="toggle">
+                                <input type="checkbox" id="hasAtmosphere" name="hasAtmosphere" checked />
+                                <span class="toggle__visual" aria-hidden="true"></span>
+                                <span class="toggle__label">Substantial atmosphere</span>
+                            </label>
+
+                            <label class="toggle">
+                                <input type="checkbox" id="hasRings" name="hasRings" />
+                                <span class="toggle__visual" aria-hidden="true"></span>
+                                <span class="toggle__label">Ring system</span>
+                            </label>
+                        </fieldset>
+
+                        <div class="form-footer">
+                            <button class="btn btn--primary" type="button" id="randomizePlanet">Surprise me</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- SECTION: Profile Panel -->
+                <section class="panel panel--profile shadow-soft" aria-label="Planet profile">
+                    <div class="panel__header">
+                        <h2 class="panel__title">Planet profile</h2>
+                        <p class="panel__subtitle">A narrative summary generated from your settings.</p>
+                    </div>
+
+                    <article class="profile" aria-live="polite">
+                        <header class="profile__header">
+                            <h3 class="profile__name" id="profileName">Eidolon-1</h3>
+                            <p class="profile__tag" id="profileTag">Temperate terrestrial world in a Sun‑like system</p>
+                        </header>
+
+                        <section class="profile__section">
+                            <h4 class="profile__heading">Composition</h4>
+                            <p class="profile__text" id="profileComposition">
+                                Dominated by iron and silicate rock with traces of lighter elements. A dense metallic
+                                core supports a rocky mantle and thin crust.
+                            </p>
+                            <div class="composition-bar" aria-label="Element composition breakdown">
+                                <div class="composition-bar__segment composition-bar__segment--core" id="compCore"
+                                    style="width: 32%">Core metals</div>
+                                <div class="composition-bar__segment composition-bar__segment--mantle" id="compMantle"
+                                    style="width: 55%">Silicates</div>
+                                <div class="composition-bar__segment composition-bar__segment--volatiles"
+                                    id="compVolatiles" style="width: 13%">Volatiles</div>
+                            </div>
+                        </section>
+
+                        <section class="profile__section">
+                            <h4 class="profile__heading">Climate & atmosphere</h4>
+                            <p class="profile__text" id="profileClimate">
+                                A stable nitrogen‑oxygen atmosphere and a temperate orbit around a G‑type star keep
+                                surface temperatures in an Earth‑like range, with liquid water possible across much of
+                                the surface.
+                            </p>
+                        </section>
+
+                        <section class="profile__section">
+                            <h4 class="profile__heading">Orbital story</h4>
+                            <p class="profile__text" id="profileOrbit">
+                                Orbiting 1.0 astronomical units from its parent star, the planet experiences moderate
+                                seasons and a year length comparable to Earth.
+                            </p>
+                        </section>
+
+                        <section class="profile__section">
+                            <h4 class="profile__heading">Moons & rings</h4>
+                            <p class="profile__text" id="profileMoons">
+                                One large moon dominates the night sky, stabilizing the planet’s axial tilt and driving
+                                noticeable tides across shallow seas.
+                            </p>
+                        </section>
+                    </article>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <!-- SECTION: Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
